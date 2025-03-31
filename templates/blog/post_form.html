@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        {% if object %}
+                            Update Post
+                        {% else %}
+                            Create New Post
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Title Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Content Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">Content</label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.content.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Image Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Image (optional)</label>
+                            {{ form.image }}
+                            {% if form.image.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.image.errors }}
+                                </div>
+                            {% endif %}
+                            {% if form.instance.image %}
+                                <div class="mt-2">
+                                    <small>Current image:</small><br>
+                                    <img src="{{ form.instance.image.url }}" class="img-thumbnail" width="200">
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                {% if object %}
+                                    Update
+                                {% else %}
+                                    Create
+                                {% endif %}
+                            </button>
+                            <a href="{% if object %}{% url 'blog:post_detail' object.pk %}{% else %}{% url 'blog:post_list' %}{% endif %}" 
+                               class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add CKEditor for rich text editing (optional) -->
+<script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('id_content');
+</script>
+{% endblock %}

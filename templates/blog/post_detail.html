@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Post Content -->
+            <article class="card mb-4">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="card-title">{{ post.title }}</h1>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="text-muted">
+                            <span>Posted by <a href="#">{{ post.author }}</a></span>
+                            <span class="mx-2">|</span>
+                            <span>{{ post.date_posted|date:"F d, Y" }}</span>
+                        </div>
+                        {% if user == post.author %}
+                        <div>
+                            <a href="{% url 'blog:post_update' post.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'blog:post_delete' post.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-text post-content">
+                        {{ post.content|linebreaks }}
+                    </div>
+                </div>
+            </article>
+
+            <!-- Comments Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Comments ({{ post.comments.count }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'blog:add_comment_to_post' post.pk %}">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <textarea name="text" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post Comment</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted">Please <a href="{% url 'accounts:login' %}">login</a> to leave a comment.</p>
+                    {% endif %}
+
+                    <hr class="my-4">
+
+                    {% for comment in post.comments.all %}
+                        {% if comment.approved_comment or user == post.author %}
+                        <div class="media mb-4 {% if not comment.approved_comment %}comment-not-approved{% endif %}">
+                            <div class="media-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mt-0">{{ comment.author }}</h5>
+                                    <small class="text-muted">{{ comment.created_date|timesince }} ago</small>
+                                </div>
+                                <p>{{ comment.text|linebreaks }}</p>
+                                
+                                {% if not comment.approved_comment and user == post.author %}
+                                <div>
+                                    <a href="{% url 'blog:comment_approve' comment.pk %}" class="btn btn-sm btn-success">Approve</a>
+                                    <a href="{% url 'blog:comment_remove' comment.pk %}" class="btn btn-sm btn-danger">Remove</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-muted">No comments yet. Be the first to comment!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .post-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    
+    .comment-not-approved {
+        opacity: 0.7;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    
+    .media {
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
